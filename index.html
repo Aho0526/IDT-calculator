@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: content: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+    <script src="components/loader.js"></script>
+    <script src="classic.js"></script>
+    <link rel="stylesheet" href="components/loader.css">
+    <link rel="stylesheet" href="css/style.css">
+    <title>IDT計算ツール（20分TT & 2000mTT）</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 1em;
+        background: #f9f9f9;
+      }
+      h1, h2 {
+        text-align: center;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1em;
+        margin-bottom: 1em;
+      }
+      th, td {
+        border: 1px solid #ccc;
+        padding: 0.4em;
+        text-align: center;
+        font-size: 0.9em;
+      }
+      input {
+        width: 90%;
+        padding: 0.3em;
+        font-size: 0.9em;
+      }
+      button {
+        margin: 0.5em 0;
+        padding: 0.5em 1em;
+        font-size: 0.9em;
+      }
+      .result {
+        font-weight: bold;
+      }
+    </style>
+</head>
+<body>
+  <h1>IDT計算ツール</h1>
+
+
+  <h2>2000mTT用IDT計算</h2>
+  <table id="dataTable2k">
+    <thead>
+      <tr>
+        <th>タイム(例:7:42.6)</th>
+        <th>体重(kg)</th>
+        <th>性別</th>
+        <th>IDT(%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="text" placeholder="mm:ss.s"></td>
+        <td><input type="number" placeholder="60"></td>
+        <td>
+          <input type="radio" name="gender1" value="0" checked> 男性
+          <input type="radio" name="gender1" value="1"> 女性
+        </td>
+        <td class="result"></td>
+      </tr>
+    </tbody>
+  </table>
+  <button onclick="calcAll2k()">計算</button>
+
+    <hr>
+  <h2>20分TT用IDT計算</h2>
+  <table id="dataTable20">
+    <thead>
+      <tr>
+        <th>20分平均ペース(例:2:05.3)</th>
+        <th>体重(kg)</th>
+        <th>性別</th>
+        <th>IDT(%)</th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td><input type="text" placeholder="mm:ss.s"></td>
+      <td><input type="number" placeholder="60"></td>
+      <td>
+        <input type="radio" name="gender0" value="0" checked> 男性
+        <input type="radio" name="gender0" value="1"> 女性
+      </td>
+      <td class="result"></td>
+    </tr>
+  </tbody>
+  </table>
+  <button onclick="calcAll20()">計算</button>
+     <h5>20分TTの計算結果のIDTはあくまでも目安です。</h5>
+  <hr>
+
+    IDTの計算は<a href= "https://marine.isee.nagoya-u.ac.jp/labhp/member/aiki/idte.html" >名古屋大学</a>の計算式を用いて計算しています。<br><br>
+    20分TT用の計算では、500mペース×4×0.9というように計算しています。<br>
+    0.9という数値は2000mTTのタイムとの差を取るための補正係数です。<br>
+    調整が必要ならば随時更新します。
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+      function splitToSeconds(split) {
+        const parts = split.split(":");
+        if (parts.length !== 2) return NaN;
+        const min = parseFloat(parts[0]);
+        const sec = parseFloat(parts[1]);
+        return min * 60 + sec;
+      }
+
+      window.addRow20 = function() {
+        const tbody = document.querySelector("#dataTable20 tbody");
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="text" placeholder="mm:ss.s"></td>
+          <td><input type="number" placeholder="60"></td>
+          <td><input type="number" min="0" max="1" placeholder="0"></td>
+          <td class="result"></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      window.addRow2k = function() {
+        const tbody = document.querySelector("#dataTable2k tbody");
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="text" placeholder="mm:ss.s"></td>
+          <td><input type="number" placeholder="60"></td>
+          <td><input type="number" min="0" max="1" placeholder="0"></td>
+          <td class="result"></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+window.calcAll20 = function() {
+  document.querySelectorAll("#dataTable20 tbody tr").forEach(tr => {
+    const splitInput = tr.children[0].querySelector("input").value.trim(); // 0列目: ペース
+    const weight = parseFloat(tr.children[1].querySelector("input").value); // 1列目: 体重
+
+    // 性別（ラジオボタン）
+    const genderInput = tr.children[2].querySelector('input[type="radio"]:checked');
+    const gender = genderInput ? parseFloat(genderInput.value) : NaN;
+
+    if (splitInput && !isNaN(weight) && !isNaN(gender)) {
+      const parts = splitInput.split(":");
+      if (parts.length === 2) {
+        const min = parseFloat(parts[0]);
+        const sec = parseFloat(parts[1]);
+        const splitSec = min * 60 + sec;
+
+        // 補正係数(現在0.9)
+        const ergo = splitSec * 4 * 0.9;
+
+        const idtm = ((101.0 - weight) * (20.9/23.0) + 333.07) / ergo * 100.0;
+        const idtw = ((100.0 - weight) * 1.40 + 357.80) / ergo * 100.0;
+        const score = idtm * (1.0 - gender) + idtw * gender;
+
+        tr.querySelector(".result").textContent = score.toFixed(1) + "%";
+      } else {
+        tr.querySelector(".result").textContent = "入力エラー";
+      }
+    } else {
+      tr.querySelector(".result").textContent = "";
+    }
+  });
+};
+
+window.calcAll2k = function() {
+  document.querySelectorAll("#dataTable2k tbody tr").forEach(tr => {
+    const time2kInput = tr.children[0].querySelector("input").value.trim(); 
+    const weight = parseFloat(tr.children[1].querySelector("input").value); 
+
+    const genderInput = tr.children[2].querySelector('input[type="radio"]:checked');
+    const gender = genderInput ? parseFloat(genderInput.value) : NaN;
+
+    if (time2kInput && !isNaN(weight) && !isNaN(gender)) {
+      const ergo = splitToSeconds(time2kInput);
+      const idtm = ((101.0 - weight) * (20.9/23.0) + 333.07) / ergo * 100.0;
+      const idtw = ((100.0 - weight) * 1.40 + 357.80) / ergo * 100.0;
+      const score = idtm * (1.0 - gender) + idtw * gender;
+      tr.querySelector(".result").textContent = score.toFixed(1) + "%";
+    } else {
+      tr.querySelector(".result").textContent = "";
+    }
+  });
+};
+}); 
+</script>
+</body>
+</html>
