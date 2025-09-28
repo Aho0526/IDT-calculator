@@ -103,8 +103,8 @@
   <hr>
 
     IDTの計算は<a href= "https://marine.isee.nagoya-u.ac.jp/labhp/member/aiki/idte.html" >名古屋大学</a>の計算式を用いて計算しています。<br><br>
-    20分TT用の計算では、500mペース×4×0.9というように計算しています。<br>
-    0.9という数値は2000mTTのタイムとの差を取るための補正係数です。<br>
+    20分TT用の計算では、500mペース×4×0.94というように計算しています。<br>
+    0.94という数値は2000mTTのタイムとの差を取るための補正係数です。<br>
     調整が必要ならば随時更新します。
   <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -143,8 +143,8 @@
 
 window.calcAll20 = function() {
   document.querySelectorAll("#dataTable20 tbody tr").forEach(tr => {
-    const splitInput = tr.children[0].querySelector("input").value.trim(); // 0列目: ペース
-    const weight = parseFloat(tr.children[1].querySelector("input").value); // 1列目: 体重
+    const splitInput = tr.children[0].querySelector("input").value.trim();
+    const weight = parseFloat(tr.children[1].querySelector("input").value); 
 
     // 性別（ラジオボタン）
     const genderInput = tr.children[2].querySelector('input[type="radio"]:checked');
@@ -158,7 +158,7 @@ window.calcAll20 = function() {
         const splitSec = min * 60 + sec;
 
         // 補正係数(現在0.9)
-        const ergo = splitSec * 4 * 0.9;
+        const ergo = splitSec * 4 * 0.94;
 
         const idtm = ((101.0 - weight) * (20.9/23.0) + 333.07) / ergo * 100.0;
         const idtw = ((100.0 - weight) * 1.40 + 357.80) / ergo * 100.0;
