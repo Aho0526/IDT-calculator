@@ -22,15 +22,30 @@
       --link: var(--link-light);
       --border-light: rgba(0,0,0,0.12);
       --border-dark: rgba(255,255,255,0.12);
+      --button-bg-light: #f0f0f0;
+      --button-bg-dark: #2a2a2a;
+      --button-fg-light: #333333;
+      --button-fg-dark: #d0d0d0;
+      --radio-color-light: #333333;
+      --radio-color-dark: #888888;
     }
+    /* テーマ切替（body[data-theme="dark"| "light"] で上書き） */
     body[data-theme="dark"]{
       --bg: var(--bg-dark);
       --fg: var(--fg-dark);
       --link: var(--link-dark);
+      --button-bg: var(--button-bg-dark);
+      --button-fg: var(--button-fg-dark);
+      --radio-color: var(--radio-color-dark);
     }
+    
     body[data-theme="light"]{
       --bg: var(--bg-light);
       --fg: var(--fg-light);
+      --link: var(--link-light);
+      --button-bg: var(--button-bg-light);
+      --button-fg: var(--button-fg-light);
+      --radio-color: var(--radio-color-light);
     }
 
     body {
@@ -68,8 +83,18 @@
       }
       button {
         margin: 0.5em 0;
-        padding: 0.5em 1em;
+        padding: 0.5em 1.5em;
         font-size: 0.9em;
+        background: var(--button-bg);
+        color: var(--button-fg);
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      button:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
       }
       .result {
         font-weight: bold;
@@ -93,6 +118,7 @@
         text-decoration: underline;
       }
 
+      /* カラートグルボタン（右下） */
       #themeToggle {
         position: fixed;
         right: 12px;
@@ -118,6 +144,29 @@
       body[data-theme="dark"] input {
         border-color: var(--border-dark);
       }
+
+      /* ラジオボタンのカスタマイズ */
+      input[type="radio"] {
+        width: auto;
+        accent-color: var(--radio-color);
+        margin-right: 4px;
+      }
+
+      /* ラジオボタンのラベル */
+      input[type="radio"] + label {
+        color: var(--fg);
+        margin-right: 8px;
+      }
+
+      /* 入力エラー時の文字色 */
+      .result:contains("入力エラー") {
+        color: #ff6b6b;
+      }
+
+      /* .redクラスのダークモード対応 */
+      body[data-theme="dark"] .red {
+        color: #ff8080;
+      }
     </style>
 </head>
 <body>
@@ -139,7 +188,7 @@
         <td><input type="text" placeholder="mm:ss.s"></td>
         <td><input type="number" placeholder="60"></td>
         <td>
-          <input type="radio" name="gender1" value="0" checked> 男性
+          <input type="radio" name="gender1" value="0" checked> 男性<p>
           <input type="radio" name="gender1" value="1"> 女性
         </td>
         <td class="result"></td>
@@ -164,7 +213,7 @@
       <td><input type="text" placeholder="mm:ss.s"></td>
       <td><input type="number" placeholder="60"></td>
       <td>
-        <input type="radio" name="gender0" value="0" checked> 男性
+        <input type="radio" name="gender0" value="0" checked> 男性<p>
         <input type="radio" name="gender0" value="1"> 女性
       </td>
       <td class="result"></td>
@@ -187,7 +236,7 @@
 
     
   <script>
-
+    // グローバルヘルパー関数
     window.splitToSeconds = function(split) {
       if (!split || typeof split !== "string") return NaN;
       const parts = split.split(":");
@@ -198,9 +247,10 @@
       return min * 60 + sec;
     };
 
-   
+    // 行カウンター初期化
     window.rowCounter = 0;
-      
+
+    // DOM準備完了後の処理をまとめる
     document.addEventListener("DOMContentLoaded", function() {
       // 行追加関数
       window.addRow20 = function() {
@@ -237,7 +287,7 @@
         tbody.appendChild(tr);
       };
 
-  
+      // 計算関数
       window.calcAll20 = function() {
         document.querySelectorAll("#dataTable20 tbody tr").forEach(tr => {
           const splitInput = tr.children[0].querySelector("input").value.trim();
@@ -285,6 +335,7 @@
         });
       };
 
+      // テーマ切り替え機能の初期化
       const btn = document.createElement('button');
       btn.id = 'themeToggle';
       btn.type = 'button';
@@ -298,7 +349,7 @@
 
       function applyTheme(t) {
         document.body.setAttribute('data-theme', t);
-        btn.textContent = t === 'dark' ? '☀️' : '🌙';
+        btn.textContent = t === 'dark' ? '☀' : '🌙';
         try { localStorage.setItem('idt_theme', t); } catch(e){}
       }
 
