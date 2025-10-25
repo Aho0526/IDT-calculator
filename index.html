@@ -7,14 +7,38 @@
     <script src="components/loader.js"></script>
     <script src="classic.js"></script>
     <link rel="stylesheet" href="components/loader.css">
-    <link rel="stylesheet" href="css/style.css">
-    <title>IDT | 2000mTT&20minTT</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        margin: 1em;
-        background: #f9f9f9;
-      }
+    
+    <title>IDT計算（20分TT & 2000mTT）</title>
+    <style>    
+    :root{
+      --bg-light: #f9f9f9;
+      --bg-dark: #171717;
+      --fg-light: #333333;
+      --fg-dark: #e0e0e0;
+      --link-light: #0066cc;
+      --link-dark: #88bbff;
+      --bg: var(--bg-light);
+      --fg: var(--fg-light);
+      --link: var(--link-light);
+      --border-light: rgba(0,0,0,0.12);
+      --border-dark: rgba(255,255,255,0.12);
+    }
+    body[data-theme="dark"]{
+      --bg: var(--bg-dark);
+      --fg: var(--fg-dark);
+      --link: var(--link-dark);
+    }
+    body[data-theme="light"]{
+      --bg: var(--bg-light);
+      --fg: var(--fg-light);
+    }
+
+    body {
+      font-family: sans-serif;
+      margin: 1em;
+      background: var(--bg);
+      color: var(--fg);
+    }
       h1, h2 {
         text-align: center;
       }
@@ -25,15 +49,22 @@
         margin-bottom: 1em;
       }
       th, td {
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-light);
         padding: 0.4em;
         text-align: center;
         font-size: 0.9em;
+      }
+      body[data-theme="dark"] th, body[data-theme="dark"] td {
+        border-color: var(--border-dark);
       }
       input {
         width: 90%;
         padding: 0.3em;
         font-size: 0.9em;
+        background: transparent;
+        color: var(--fg);
+        border: 1px solid rgba(0,0,0,0.08);
+        border-color: var(--border-light);
       }
       button {
         margin: 0.5em 0;
@@ -53,10 +84,45 @@
         padding: 0.1em 0.2em;       
         border-radius: 2px; 
       }
+      a {
+        color: var(--link);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      #themeToggle {
+        position: fixed;
+        right: 12px;
+        top: 12px;
+        width: 44px;
+        height: 44px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        border: none;
+        background: rgba(0,0,0,0.06);
+        color: var(--fg);
+        cursor: pointer;
+        font-size: 18px;
+        z-index: 1000;
+      }
+      body[data-theme="dark"] #themeToggle {
+        background: rgba(255,255,255,0.08);
+      }
+
+      body[data-theme="dark"] input {
+        border-color: var(--border-dark);
+      }
     </style>
 </head>
 <body>
-  <h1>IDT計算機</h1>
+  <h1>IDT計算ツール</h1>
+
 
   <h2>2000mTT用IDT計算</h2>
   <table id="dataTable2k">
@@ -113,99 +179,145 @@
     入力形式が間違っていると計算できません。<br><br>
 
     IDTの計算は<a href= "https://marine.isee.nagoya-u.ac.jp/labhp/member/aiki/idte.html" >名古屋大学</a>の計算式を用いて計算しています。<br><br>
-    20分TT用の計算では、<p><span class="m-r">20分間の平均500mペース×4×0.94</span><p>という計算式で計算しています。<br>
-    0.94という数値は2000mTTのタイムとの差を取るための補正係数です。<br><br><br>
+    20分TT用の計算では、平均500mペースに補正係数（0.94）を適用し、2000mTTに相当する推定値を算出しています
 
-    &copy; 2025 IDTcalculator Guide
+<hr>
+  <p><span class="min">&copy; 2025 KTHS RC</span></p>
+  <p class="min">Based on IDT concept (Nagoya Univ.) with original adjustments for 20min TT</p>
+
     
   <script>
+
+    window.splitToSeconds = function(split) {
+      if (!split || typeof split !== "string") return NaN;
+      const parts = split.split(":");
+      if (parts.length !== 2) return NaN;
+      const min = parseFloat(parts[0]);
+      const sec = parseFloat(parts[1]);
+      if (isNaN(min) || isNaN(sec)) return NaN;
+      return min * 60 + sec;
+    };
+
+   
+    window.rowCounter = 0;
+      
     document.addEventListener("DOMContentLoaded", function() {
-
-      function splitToSeconds(split) {
-        const parts = split.split(":");
-        if (parts.length !== 2) return NaN;
-        const min = parseFloat(parts[0]);
-        const sec = parseFloat(parts[1]);
-        return min * 60 + sec;
-      }
-
+      // 行追加関数
       window.addRow20 = function() {
         const tbody = document.querySelector("#dataTable20 tbody");
+        if (!tbody) return;
         const tr = document.createElement("tr");
+        const name = `gender20_${++window.rowCounter}`;
         tr.innerHTML = `
           <td><input type="text" placeholder="mm:ss.s"></td>
           <td><input type="number" placeholder="60"></td>
-          <td><input type="number" min="0" max="1" placeholder="0"></td>
+          <td>
+            <label><input type="radio" name="${name}" value="0" checked> 男性</label>
+            <label><input type="radio" name="${name}" value="1"> 女性</label>
+          </td>
           <td class="result"></td>
         `;
         tbody.appendChild(tr);
-      }
+      };
 
       window.addRow2k = function() {
         const tbody = document.querySelector("#dataTable2k tbody");
+        if (!tbody) return;
         const tr = document.createElement("tr");
+        const name = `gender2k_${++window.rowCounter}`;
         tr.innerHTML = `
           <td><input type="text" placeholder="mm:ss.s"></td>
           <td><input type="number" placeholder="60"></td>
-          <td><input type="number" min="0" max="1" placeholder="0"></td>
+          <td>
+            <label><input type="radio" name="${name}" value="0" checked> 男性</label>
+            <label><input type="radio" name="${name}" value="1"> 女性</label>
+          </td>
           <td class="result"></td>
         `;
         tbody.appendChild(tr);
+      };
+
+  
+      window.calcAll20 = function() {
+        document.querySelectorAll("#dataTable20 tbody tr").forEach(tr => {
+          const splitInput = tr.children[0].querySelector("input").value.trim();
+          const weight = parseFloat(tr.children[1].querySelector("input").value);
+          const genderInput = tr.children[2].querySelector('input[type="radio"]:checked');
+          const gender = genderInput ? parseFloat(genderInput.value) : NaN;
+
+          if (splitInput && !isNaN(weight) && !isNaN(gender)) {
+            const splitSec = window.splitToSeconds(splitInput);
+            if (!isNaN(splitSec)) {
+              const ergo = splitSec * 4 * 0.94; // 補正係数
+              const idtm = ((101.0 - weight) * (20.9/23.0) + 333.07) / ergo * 100.0;
+              const idtw = ((100.0 - weight) * 1.40 + 357.80) / ergo * 100.0;
+              const score = idtm * (1.0 - gender) + idtw * gender;
+              tr.querySelector(".result").textContent = score.toFixed(1) + "%";
+            } else {
+              tr.querySelector(".result").textContent = "入力エラー";
+            }
+          } else {
+            tr.querySelector(".result").textContent = "";
+          }
+        });
+      };
+
+      window.calcAll2k = function() {
+        document.querySelectorAll("#dataTable2k tbody tr").forEach(tr => {
+          const time2kInput = tr.children[0].querySelector("input").value.trim();
+          const weight = parseFloat(tr.children[1].querySelector("input").value);
+          const genderInput = tr.children[2].querySelector('input[type="radio"]:checked');
+          const gender = genderInput ? parseFloat(genderInput.value) : NaN;
+
+          if (time2kInput && !isNaN(weight) && !isNaN(gender)) {
+            const ergo = window.splitToSeconds(time2kInput);
+            if (!isNaN(ergo) && ergo > 0) {
+              const idtm = ((101.0 - weight) * (20.9/23.0) + 333.07) / ergo * 100.0;
+              const idtw = ((100.0 - weight) * 1.40 + 357.80) / ergo * 100.0;
+              const score = idtm * (1.0 - gender) + idtw * gender;
+              tr.querySelector(".result").textContent = score.toFixed(1) + "%";
+            } else {
+              tr.querySelector(".result").textContent = "入力エラー";
+            }
+          } else {
+            tr.querySelector(".result").textContent = "";
+          }
+        });
+      };
+
+      const btn = document.createElement('button');
+      btn.id = 'themeToggle';
+      btn.type = 'button';
+      btn.title = 'カラー切替';
+      document.body.appendChild(btn);
+
+      const stored = localStorage.getItem('idt_theme');
+      const mql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+      const prefersDark = mql ? mql.matches : false;
+      const initial = stored || (prefersDark ? 'dark' : 'light');
+
+      function applyTheme(t) {
+        document.body.setAttribute('data-theme', t);
+        btn.textContent = t === 'dark' ? '☀️' : '🌙';
+        try { localStorage.setItem('idt_theme', t); } catch(e){}
       }
 
-window.calcAll20 = function() {
-  document.querySelectorAll("#dataTable20 tbody tr").forEach(tr => {
-    const splitInput = tr.children[0].querySelector("input").value.trim(); 
-    const weight = parseFloat(tr.children[1].querySelector("input").value); 
-    
+      applyTheme(initial);
 
-    const genderInput = tr.children[2].querySelector('input[type="radio"]:checked');
-    const gender = genderInput ? parseFloat(genderInput.value) : NaN;
+      btn.addEventListener('click', function(){
+        const current = document.body.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+      });
 
-    if (splitInput && !isNaN(weight) && !isNaN(gender)) {
-      const parts = splitInput.split(":");
-      if (parts.length === 2) {
-        const min = parseFloat(parts[0]);
-        const sec = parseFloat(parts[1]);
-        const splitSec = min * 60 + sec;
-
-        // 補正係数(現在0.94)
-        const ergo = splitSec * 4 * 0.94;
-
-        const idtm = ((101.0 - weight) * (20.9/23.0) + 333.07) / ergo * 100.0;
-        const idtw = ((100.0 - weight) * 1.40 + 357.80) / ergo * 100.0;
-        const score = idtm * (1.0 - gender) + idtw * gender;
-
-        tr.querySelector(".result").textContent = score.toFixed(1) + "%";
-      } else {
-        tr.querySelector(".result").textContent = "入力エラー";
+      if (!stored && mql) {
+        const handler = e => applyTheme(e.matches ? 'dark' : 'light');
+        if (typeof mql.addEventListener === 'function') {
+          mql.addEventListener('change', handler);
+        } else if (typeof mql.addListener === 'function') {
+          mql.addListener(handler);
+        }
       }
-    } else {
-      tr.querySelector(".result").textContent = "";
-    }
-  });
-};
-
-window.calcAll2k = function() {
-  document.querySelectorAll("#dataTable2k tbody tr").forEach(tr => {
-    const time2kInput = tr.children[0].querySelector("input").value.trim(); 
-    const weight = parseFloat(tr.children[1].querySelector("input").value); 
-
-    const genderInput = tr.children[2].querySelector('input[type="radio"]:checked');
-    const gender = genderInput ? parseFloat(genderInput.value) : NaN;
-
-    if (time2kInput && !isNaN(weight) && !isNaN(gender)) {
-      const ergo = splitToSeconds(time2kInput);
-      const idtm = ((101.0 - weight) * (20.9/23.0) + 333.07) / ergo * 100.0;
-      const idtw = ((100.0 - weight) * 1.40 + 357.80) / ergo * 100.0;
-      const score = idtm * (1.0 - gender) + idtw * gender;
-      tr.querySelector(".result").textContent = score.toFixed(1) + "%";
-    } else {
-      tr.querySelector(".result").textContent = "";
-    }
-  });
-};
-}); 
-</script>
+    });
+  </script>
 </body>
 </html>
