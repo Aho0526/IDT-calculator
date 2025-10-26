@@ -29,7 +29,6 @@
       --radio-color-light: #333333;
       --radio-color-dark: #888888;
     }
-    /* テーマ切替（body[data-theme="dark"| "light"] で上書き） */
     body[data-theme="dark"]{
       --bg: var(--bg-dark);
       --fg: var(--fg-dark);
@@ -117,8 +116,6 @@
       a:hover {
         text-decoration: underline;
       }
-
-      /* カラートグルボタン（右下） */
       #themeToggle {
         position: fixed;
         right: 12px;
@@ -144,26 +141,18 @@
       body[data-theme="dark"] input {
         border-color: var(--border-dark);
       }
-
-      /* ラジオボタンのカスタマイズ */
       input[type="radio"] {
         width: auto;
         accent-color: var(--radio-color);
         margin-right: 4px;
       }
-
-      /* ラジオボタンのラベル */
       input[type="radio"] + label {
         color: var(--fg);
         margin-right: 8px;
       }
-
-      /* 入力エラー時の文字色 */
       .result:contains("入力エラー") {
         color: #ff6b6b;
       }
-
-      /* .redクラスのダークモード対応 */
       body[data-theme="dark"] .red {
         color: #ff8080;
       }
@@ -171,8 +160,6 @@
 </head>
 <body>
   <h1>IDT計算ツール</h1>
-
-
   <h2>2000mTT用IDT計算</h2>
   <table id="dataTable2k">
     <thead>
@@ -196,7 +183,6 @@
     </tbody>
   </table>
   <button onclick="calcAll2k()">計算</button>
-
     <hr>
   <h2>20分TT用IDT計算</h2>
   <table id="dataTable20">
@@ -228,7 +214,7 @@
     入力形式が間違っていると計算できません。<br><br>
 
     IDTの計算は<a href= "https://marine.isee.nagoya-u.ac.jp/labhp/member/aiki/idte.html" >名古屋大学</a>の計算式を用いて計算しています。<br><br>
-    20分TT用の計算では、平均500mペースに補正係数（0.94）を適用し、2000mTTに相当する推定値を算出しています
+    20分TT用の計算では、平均500mペースに補正係数（0.94）を適用し、2000mTTに相当する推定値を算出しています。
 
 <hr>
   <p><span class="min">&copy; 2025 KTHS RC</span></p>
@@ -246,13 +232,10 @@
       if (isNaN(min) || isNaN(sec)) return NaN;
       return min * 60 + sec;
     };
-
-    // 行カウンター初期化
+      
     window.rowCounter = 0;
-
-    // DOM準備完了後の処理をまとめる
+      
     document.addEventListener("DOMContentLoaded", function() {
-      // 行追加関数
       window.addRow20 = function() {
         const tbody = document.querySelector("#dataTable20 tbody");
         if (!tbody) return;
@@ -287,7 +270,7 @@
         tbody.appendChild(tr);
       };
 
-      // 計算関数
+      // 計算
       window.calcAll20 = function() {
         document.querySelectorAll("#dataTable20 tbody tr").forEach(tr => {
           const splitInput = tr.children[0].querySelector("input").value.trim();
@@ -335,7 +318,6 @@
         });
       };
 
-      // テーマ切り替え機能の初期化
       const btn = document.createElement('button');
       btn.id = 'themeToggle';
       btn.type = 'button';
@@ -349,7 +331,7 @@
 
       function applyTheme(t) {
         document.body.setAttribute('data-theme', t);
-        btn.textContent = t === 'dark' ? '☀' : '🌙';
+        btn.textContent = t === 'dark' ? '☀️' : '🌙';
         try { localStorage.setItem('idt_theme', t); } catch(e){}
       }
 
