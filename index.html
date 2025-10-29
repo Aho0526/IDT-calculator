@@ -210,12 +210,10 @@
     入力形式が間違っていると計算できません。<br><br>
 
     IDTの計算は<a href= "https://marine.isee.nagoya-u.ac.jp/labhp/member/aiki/idte.html" >名古屋大学</a>の計算式を用いて計算しています。<br><br>
-    20分TT用の計算では、平均500mペースに補正係数（0.94）を適用し、2000mTTに相当する推定値を算出しています。
-
+    20分TT用の計算では、平均500mペースに補正係数(0.94)を適用し、2000mTTに相当する推定値を算出しています。
 <hr>
   <p><span class="min">&copy; 2025 KTHS RC</span></p>
-  <p class="min">Based on IDT concept (Nagoya Univ.) with original adjustments for 20min TT</p>
-
+  <p class="min">Based on IDT calculator (Nagoya Univ.) with original adjustments for 20min TT</p>
     
   <script>
     // グローバルヘルパー関数
@@ -266,7 +264,7 @@
         tbody.appendChild(tr);
       };
 
-      // 計算
+      // 計算(20minTT)
       window.calcAll20 = function() {
         document.querySelectorAll("#dataTable20 tbody tr").forEach(tr => {
           const splitInput = tr.children[0].querySelector("input").value.trim();
